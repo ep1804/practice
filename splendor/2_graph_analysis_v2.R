@@ -55,7 +55,9 @@ graph_t2d = function(d) {
 }
 
 graph_v2l = function(v) {
-  
+  lbl = c('Diamond', 'Sapphire', 'Emerald', 'Ruby', 'Onyx')
+  ord = as.vector(topo_lv2)
+  lbl[ord]
 }
 
 plot_circle = function(g) {
@@ -199,7 +201,8 @@ d4 %>% filter(develop == 'ruby' & level == 3) %>% graph_t2d %>% plot_circle
 d4 %>% filter(develop == 'onyx' & level == 2) %>% graph_t2d %>% plot_circle
 d4 %>% filter(develop == 'onyx' & level == 3) %>% graph_t2d %>% plot_circle
 
-topo_lv2 = d4 %>% filter(level == 2) %>% graph_t2d %>% topo_sort(mode = c("out"))
+d4 %>% filter(level == 2) %>% graph_t2d %>% topo_sort(mode = c("out"))
+%>% graph_v2l
 
 
 # leave MAX and second to MAX
