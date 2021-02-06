@@ -54,7 +54,11 @@ graph_t2d = function(d) {
   g1
 }
 
-plot_circle = function(g, arrow_size = 0.8) {
+graph_v2l = function(v) {
+  
+}
+
+plot_circle = function(g) {
   plot(g,
        layout = layout_in_circle(g),
        vertex.size=15,
@@ -64,8 +68,33 @@ plot_circle = function(g, arrow_size = 0.8) {
        vertex.label.cex=0.8,
        vertex.label.dist=2.5,
        edge.arrow.mode=2,
-       edge.arrow.size=arrow_size,
-       edge.width = E(g)$weight * 0.5 + 1)
+       edge.arrow.size= sqrt(E(g)$weight * 0.4 + 0.5) * 0.8,
+       edge.width = E(g)$weight * 0.6 + 0.6)
+}
+
+plot_line = function(g) {
+  
+  curve_multiple(g)
+  
+  g %>%
+    set_edge_attr("curved", value=0) %>%
+    set_edge_attr("loop.angle", E(.)[1%--%1, 2%--%2, 3%--%3, 4%--%4, 5%--%5], pi * 0.7) %>%
+    set_edge_attr("curved", E(.)[1:5 %->% 1], 0.7) %>%
+    set_edge_attr("curved", E(.)[1:5 %->% 2], 0.7) %>%
+    set_edge_attr("curved", E(.)[1:5 %->% 3], 0.7) %>%
+    set_edge_attr("curved", E(.)[1:5 %->% 4], 0.7) %>%
+    set_edge_attr("curved", E(.)[1:5 %->% 5], 0.7) %>%
+    plot(
+      layout = layout_on_grid(g, width=5, height=1),
+      vertex.size=15,
+      vertex.color=V(g)$color,
+      vertex.frame.color='white',
+      vertex.label.color='black',
+      vertex.label.cex=0.8,
+      vertex.label.dist=2.5,
+      edge.arrow.mode=2,
+      edge.arrow.size= sqrt(E(g)$weight * 0.4 + 0.5) * 0.8,
+      edge.width = E(g)$weight * 0.6 + 0.6)
 }
 
 
@@ -134,43 +163,61 @@ d3 %>% filter(develop == 'onyx' & level == 1) %>% graph_t2d %>% plot_circle
 d3 %>% filter(develop == 'onyx' & level == 2) %>% graph_t2d %>% plot_circle
 d3 %>% filter(develop == 'onyx' & level == 3) %>% graph_t2d %>% plot_circle
 
+d3 %>% filter(level == 1) %>% graph_t2d %>% plot_circle
+d3 %>% filter(level == 2) %>% graph_t2d %>% plot_circle
+d3 %>% filter(level == 3) %>% graph_t2d %>% plot_circle
 
 
-d3 %>% filter(develop == 'diamond' & level == 1) %>% graph_t2d %>% plot_line
+# leave MAX only
+d4 = d3 %>% pmap_dfr(function(...){
+  row = as.vector(tibble(...))
+  toks = c(row$token_diamond, row$token_sapphire, row$token_emerald, row$token_ruby, row$token_onyx)
+  cut = max(toks)
+  tibble(level = row$level,
+         develop = row$develop,
+         token_diamond = if (row$token_diamond >= cut) row$token_diamond else 0,
+         token_sapphire = if (row$token_sapphire >= cut) row$token_sapphire else 0,
+         token_emerald = if (row$token_emerald >= cut) row$token_emerald else 0,
+         token_ruby = if (row$token_ruby >= cut) row$token_ruby else 0,
+         token_onyx = if (row$token_onyx >= cut) row$token_onyx else 0)
+})
+
+print(d4)
+
+d4 %>% filter(develop == 'diamond' & level == 2) %>% graph_t2d %>% plot_circle
+d4 %>% filter(develop == 'diamond' & level == 3) %>% graph_t2d %>% plot_circle
+
+d4 %>% filter(develop == 'sapphire' & level == 2) %>% graph_t2d %>% plot_circle
+d4 %>% filter(develop == 'sapphire' & level == 3) %>% graph_t2d %>% plot_circle
+
+d4 %>% filter(develop == 'emerald' & level == 2) %>% graph_t2d %>% plot_circle
+d4 %>% filter(develop == 'emerald' & level == 3) %>% graph_t2d %>% plot_circle
+
+d4 %>% filter(develop == 'ruby' & level == 2) %>% graph_t2d %>% plot_circle
+d4 %>% filter(develop == 'ruby' & level == 3) %>% graph_t2d %>% plot_circle
+
+d4 %>% filter(develop == 'onyx' & level == 2) %>% graph_t2d %>% plot_circle
+d4 %>% filter(develop == 'onyx' & level == 3) %>% graph_t2d %>% plot_circle
+
+topo_lv2 = d4 %>% filter(level == 2) %>% graph_t2d %>% topo_sort(mode = c("out"))
 
 
-g = d3 %>% filter(level == 2) %>% graph_t2d
+# leave MAX and second to MAX
+d5 = d3 %>% pmap_dfr(function(...){
+  row = as.vector(tibble(...))
+  toks = c(row$token_diamond, row$token_sapphire, row$token_emerald, row$token_ruby, row$token_ruby)
+  cut = toks[order(toks)[4]]
+  tibble(level = row$level,
+         develop = row$develop,
+         token_diamond = if (row$token_diamond >= cut) row$token_diamond else 0,
+         token_sapphire = if (row$token_sapphire >= cut) row$token_sapphire else 0,
+         token_emerald = if (row$token_emerald >= cut) row$token_emerald else 0,
+         token_ruby = if (row$token_ruby >= cut) row$token_ruby else 0,
+         token_onyx = if (row$token_onyx >= cut) row$token_onyx else 0)
+})
 
-g %>%
-  set_edge_attr("curved", value=0.2) %>%
-  # set_edge_attr("curved", E(.)[1:5 %->% 1], 0.7) %>%
-  plot_circle(arrow_size = 1.0)
+print(d5)
 
-g_topo = topo_sort(g, mode = c("out"))
-
-plot_line = function(g) {
-  
-  curve_multiple(g)
-  
-  g %>%
-    set_edge_attr("curved", value=0) %>%
-    set_edge_attr("loop.angle", E(.)[1%--%1, 2%--%2, 3%--%3, 4%--%4, 5%--%5], pi * 0.7) %>%
-    set_edge_attr("curved", E(.)[1:5 %->% 1], 0.7) %>%
-    plot(
-      layout = layout_on_grid(g, width=5, height=1),
-      vertex.size=15,
-      vertex.color=V(g)$color,
-      vertex.frame.color='white',
-      vertex.label.color='black',
-      vertex.label.cex=0.8,
-      vertex.label.dist=2.5,
-      edge.arrow.mode=2,
-      edge.arrow.size=0.7,
-      edge.width = E(g)$weight * 0.5 + 1)
-}
-
-
-plot_line(g)
 
 
 
